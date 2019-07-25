@@ -5,6 +5,11 @@ let points = [];
 
 let triangle = [];
 
+const Orientations = Object.freeze({
+    CLOCKWISE:   Symbol("clockwise"),
+    COUNTER_CLOCKWISE:  Symbol("counter clockwise")
+});
+
 p5.Vector.prototype[Symbol.iterator] = function* () {
     yield this.x;
     yield this.y;
@@ -28,11 +33,11 @@ function draw() {
     //     circle(point.x, point.y, 7);
     // }
 
-    // for (const point of triangle) {
-    //     circle(point.x, point.y, 7);
-    // }
-
     displayPartialTriangle(triangle);
+
+    if (triangle.length == 3) {
+        console.log(calculateTriangleOrentation(triangle));
+    }
 }
 
 function mousePressed() {
@@ -40,6 +45,16 @@ function mousePressed() {
         triangle.length = 0;
 
     triangle.push(createVector(mouseX, mouseY));
+}
+
+function calculateTriangleOrentation(triangle) {
+    if (triangle.length != 3) 
+        throw new Error("Triangle must have 3 points");
+
+    const v1 = createVector(triangle[1].x - triangle[0].x, triangle[1].y - triangle[0].y);
+    const v2 = createVector(triangle[2].x - triangle[1].x, triangle[2].y - triangle[1].y);
+    
+    return v1.cross(v2).z > 0 ? Orientations.CLOCKWISE : Orientations.COUNTER_CLOCKWISE;
 }
 
 function displayPartialTriangle(triangle) {
