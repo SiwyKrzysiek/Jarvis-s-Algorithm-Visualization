@@ -1,4 +1,4 @@
-# Convex Hull with wrapping algorytm
+# Convex Hull with wrapping algorithm
 
 My attempt at visualization of Jarvis’s Algorithm with **Processing.js**.
 
