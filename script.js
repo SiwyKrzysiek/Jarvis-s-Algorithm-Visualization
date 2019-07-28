@@ -2,6 +2,9 @@
 
 const POINTS_COUNT = 20;
 let points = [];
+let shapeIndexes = [];
+let nextVertexIndex = 1;
+let checkingIndex = 2;
 
 let triangle = [];
 
@@ -15,12 +18,16 @@ p5.Vector.prototype[Symbol.iterator] = function* () {
     yield this.y;
 };
 
-Array.prototype.last = () => this[this.length-1];
+Array.prototype.last = function () {
+    return this[this.length - 1];
+}
+Array.prototype.first = function () {return this[0]; };
 
 function setup() {
     createCanvas(700, 500).parent("sketch");
 
-    // points = createPoints();
+    points = createPoints();
+    shapeIndexes.push(findStartingPoint(points));
 }
 
 function draw() {
@@ -29,15 +36,57 @@ function draw() {
 
     stroke(255)
     fill(255)
-    // for (const point of points) {
-    //     circle(point.x, point.y, 7);
-    // }
-
-    displayPartialTriangle(triangle);
-
-    if (triangle.length == 3) {
-        console.log(calculateTriangleOrentation(triangle));
+    for (const point of points) {
+        circle(point.x, point.y, 7);
     }
+
+    //Starting point
+    stroke("green");
+    fill("green");
+    circle(...points[shapeIndexes[0]], 10);
+
+    let previousPoint = points[shapeIndexes.last()];
+    let checkingPoint = points[checkingIndex];
+    let nextCandidatePoint = points[nextVertexIndex];
+
+    //Next candidate
+    stroke("#2d85eb");
+    line(...previousPoint, ...nextCandidatePoint);
+
+    //Currently checking point
+    stroke(255);
+    line(...previousPoint, ...checkingPoint);
+
+    let checkTriangle = [previousPoint, nextCandidatePoint, checkingPoint];
+    let orientation = calculateTriangleOrentation(checkTriangle);
+    if (orientation === Orientations.COUNTER_CLOCKWISE) {
+        nextCandidatePoint = checkingPoint;
+    }
+
+    checkingIndex = checkingIndex + 1 % points.length;
+
+    // displayPartialTriangle(triangle);
+
+    // if (triangle.length == 3) {
+    //     console.log(calculateTriangleOrentation(triangle));
+    // }
+}
+
+/**
+ * Summary. Finds starting point for wrapping algorithm
+ * 
+ * @param {Array<p5.Vector>} points Starting points for Wrapping algorithm
+ * @return {number} Index of starting point
+ */
+function findStartingPoint(points) {
+    let result = 0;
+
+    for (let i = 1; i < points.length; i++) {
+        if (points[i].x < points[result].x)
+            result = i;
+    }
+
+    return result;
 }
 
 function mousePressed() {
@@ -53,7 +102,7 @@ function calculateTriangleOrentation(triangle) {
 
     const v1 = createVector(triangle[1].x - triangle[0].x, triangle[1].y - triangle[0].y);
     const v2 = createVector(triangle[2].x - triangle[1].x, triangle[2].y - triangle[1].y);
-    
+
     return v1.cross(v2).z > 0 ? Orientations.CLOCKWISE : Orientations.COUNTER_CLOCKWISE;
 }
 
